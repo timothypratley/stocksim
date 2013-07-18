@@ -1,8 +1,8 @@
 (ns stocksim.data
-  (:require [clj-http.client :as client]
-            [clj-time.core :as t]
-            [clj-time.format :as f])
-  (:use [clojure-csv.core]))
+  (:require [clj-http.client :as client])
+  (:use [clojure-csv.core]
+        [clj-time.coerce]
+        [clj-time.format]))
 
 
 (defn get-table
@@ -14,15 +14,15 @@
        :body
        parse-csv))
 
-(def custom-formatter (f/formatter "yyyy-MM-dd"))
-
-(defn to-milliseconds-from-epoch
-  [x]
-  (t/in-msecs (t/interval (t/epoch) (f/parse custom-formatter x))))
+(def custom-formatter (formatter "yyyy-MM-dd"))
 
 (defn series
   [sym]
-  (map #(vector (to-milliseconds-from-epoch (first %)) (Double/parseDouble (last %)))
+  (map #(vector (to-long (parse custom-formatter (first %))) (Double/parseDouble (last %)))
        (rest (get-table sym))))
 
-(series "^GSPC")
+
+(def t (get-table "^GSPC"))
+(filter #(<= (to-long (parse custom-formatter %)) 0) (map first (rest t)))
+
+(filter #(<= % 0) (map first (series "^GSPC")))
