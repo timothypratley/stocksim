@@ -8,6 +8,10 @@
   [price]
   (+ price (rand) -0.5))
 
+(rand-step 10)
+
+(take 4 (iterate rand-step 1))
+
 (def year 252)
 
 (defn sim
@@ -74,6 +78,9 @@
         (* (momentum history)
            (biased-normal-step (last history)))))
 
+(momentum-normal-step [1])
+(momentum-normal-step [1 0.9856817152485976])
+
 (sim-with-history "Biased normal step with momentum" momentum-normal-step)
 
 ; Retrieve the S&P 500 ETF prices from Yahoo
@@ -125,8 +132,7 @@
 (defn buy-and-hold
   "Gross return after 30 years of holding"
   [step]
-  (nth (iterate step 1)
-       (* 30 year)))
+  (last (take (* 30 year) (iterate step 1))))
 
 (buy-and-hold sp-sample-step)
 
@@ -147,10 +153,7 @@
   (mean return))
 
 ; What are some of the relevant fixed income rates to achieve these returns?
-(nth (iterate #(fixed-step 0.069 %) 1)
-     (* 30 year))
-(nth (iterate #(fixed-step 0.054 %) 1)
-     (* 30 year))
-(nth (iterate #(fixed-step 0.037 %) 1)
-     (* 30 year))
+(buy-and-hold #(fixed-step 0.069 %))
+(buy-and-hold #(fixed-step 0.054 %))
+(buy-and-hold #(fixed-step 0.037 %))
 
